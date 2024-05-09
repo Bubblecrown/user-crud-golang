@@ -45,8 +45,8 @@ func main() {
 	fmt.Println("Database migration completed!")
 
 	// Create User
-	// newUser := &User{Username: "jane.smith", FirstName: "Jane", LastName: "Smith", Tier: 2}
-	// createUser(db, newUser)
+	newUser := &User{Username: "jane.smith", FirstName: "Jane", LastName: "Smith", Tier: 1}
+	createUser(db, newUser)
 
 	// Get All Users
 	// users := getUserById(db, 2)

@@ -56,7 +56,7 @@ func deleteUser(db *gorm.DB, id int) {
 
 func searchUserByFirstName(db *gorm.DB, firstName string) []User {
 	var user []User
-	result := db.Where("first_name = ?", firstName).Find(&user)
+	result := db.Where("first_name = ?", firstName).Order("tier").Find(&user)
 	if result.Error != nil {
 		log.Fatalf("Error seaching user: %v", result.Error)
 	}
