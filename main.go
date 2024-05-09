@@ -65,7 +65,7 @@ func main() {
 	// deleteUser(db, 1)
 
 	// Search user by username
-	userByUsername := searchUser(db, "Jane")
+	userByUsername := searchUserByFirstName(db, "Jane")
 	formattedJson, err := json.MarshalIndent(userByUsername, "", "  ")
 	if err != nil {
 		fmt.Println("Error formatting JSON:", err)
