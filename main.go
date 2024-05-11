@@ -42,13 +42,8 @@ func main() {
 		panic("failed to connect to database")
 	}
 	// compare table in database and struct in project
-	db.AutoMigrate(&User{})
+	db.AutoMigrate(&User{}, &Credential{})
 
-	// userMock := getUserById(db, 4)
-	// userMock.FirstName = "Artist"
-	// userMock.LastName = "Extraordinaire"
-	// userMock.Username = "artist_extraordinaire"
-	// updateUser(db, userMock)
 	app := fiber.New()
 
 	app.Get("/users", func(c *fiber.Ctx) error {
@@ -109,6 +104,20 @@ func main() {
 			"message": "Delete user successfully",
 		})
 
+	})
+
+	app.Post("/register", func(c *fiber.Ctx) error {
+		newCreateUser := new(Credential)
+		if err := c.BodyParser(newCreateUser); err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		err = createCredential(db, newCreateUser)
+		if err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		return c.JSON(fiber.Map{
+			"message": "Register user successfully",
+		})
 	})
 	app.Listen(":8080")
 }
