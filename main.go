@@ -96,5 +96,19 @@ func main() {
 		})
 
 	})
+	app.Delete("/user/:id", func(c *fiber.Ctx) error {
+		userId, err := strconv.Atoi(c.Params("id"))
+		if err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		err = deleteUser(db, userId)
+		if err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		return c.JSON(fiber.Map{
+			"message": "Delete user successfully",
+		})
+
+	})
 	app.Listen(":8080")
 }

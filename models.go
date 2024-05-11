@@ -4,7 +4,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"gorm.io/gorm"
@@ -52,15 +51,19 @@ func updateUser(db *gorm.DB, user *User) error {
 	return nil
 }
 
-func deleteUser(db *gorm.DB, id int) {
+func deleteUser(db *gorm.DB, id int) error {
 	var user User
-	// don't soft deletes the user
+	// Soft delete protects against accidental data loss. In contrast, hard delete means that if data is removed, it's gone forever.
+
+	// permanently delete
 	// result := db.Unscoped().Delete(&user, id)
+
+	// soft delete
 	result := db.Delete(&user, id)
 	if result.Error != nil {
-		log.Fatalf("Error deleting user: %v", result.Error)
+		return result.Error
 	}
-	fmt.Printf("Delete user successfully")
+	return nil
 }
 
 func searchUserByFirstName(db *gorm.DB, firstName string) []User {
