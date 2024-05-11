@@ -119,5 +119,26 @@ func main() {
 			"message": "Register user successfully",
 		})
 	})
+
+	app.Post("/login", func(c *fiber.Ctx) error {
+		newLoginUser := new(Credential)
+		if err := c.BodyParser(newLoginUser); err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		token, err := loginCredential(db, newLoginUser)
+		if err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		// Set cookie
+		c.Cookie(&fiber.Cookie{
+			Name:     "jwt",
+			Value:    token,
+			Expires:  time.Now().Add(time.Hour * 72),
+			HTTPOnly: true,
+		})
+		return c.JSON(fiber.Map{
+			"message": "Login successfully",
+		})
+	})
 	app.Listen(":8080")
 }
