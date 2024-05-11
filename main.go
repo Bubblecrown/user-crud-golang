@@ -1,12 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -42,35 +43,58 @@ func main() {
 	}
 	// compare table in database and struct in project
 	db.AutoMigrate(&User{})
-	fmt.Println("Database migration completed!")
 
-	// Create User
-	newUser := &User{Username: "jane.smith", FirstName: "Jane", LastName: "Smith", Tier: 1}
-	createUser(db, newUser)
+	// userMock := getUserById(db, 4)
+	// userMock.FirstName = "Artist"
+	// userMock.LastName = "Extraordinaire"
+	// userMock.Username = "artist_extraordinaire"
+	// updateUser(db, userMock)
+	app := fiber.New()
 
-	// Get All Users
-	// users := getUserById(db, 2)
-	// formattedJson, err := json.MarshalIndent(users, "", "  ")
-	// if err != nil {
-	// 	fmt.Println("Error formatting JSON:", err)
-	// 	return
-	// }
-	// fmt.Println(string(formattedJson))
+	app.Get("/users", func(c *fiber.Ctx) error {
+		return c.JSON(getAllUsers(db))
+	})
+	app.Get("/user/:id", func(c *fiber.Ctx) error {
+		userId, err := strconv.Atoi(c.Params("id"))
+		if err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		userData := getUserById(db, userId)
+		return c.JSON(userData)
+	})
+	app.Post("/users/create", func(c *fiber.Ctx) error {
+		newUser := new(User)
+		if err := c.BodyParser(newUser); err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		err = createUser(db, newUser)
+		if err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		return c.JSON(fiber.Map{
+			"message": "Create user successfully",
+		})
 
-	// Update User
-	// users.Username = "nature_lover"
-	// updateUser(db, users)
+	})
+	app.Put("/user/:id", func(c *fiber.Ctx) error {
+		userId, err := strconv.Atoi(c.Params("id"))
+		if err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
 
-	// Delete User
-	// deleteUser(db, 1)
+		newUser := new(User)
+		if err := c.BodyParser(newUser); err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		newUser.ID = uint(userId)
+		err = updateUser(db, newUser)
+		if err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		return c.JSON(fiber.Map{
+			"message": "Update user successfully",
+		})
 
-	// Search user by username
-	userByUsername := searchUserByFirstName(db, "Jane")
-	formattedJson, err := json.MarshalIndent(userByUsername, "", "  ")
-	if err != nil {
-		fmt.Println("Error formatting JSON:", err)
-		return
-	}
-	fmt.Println(string(formattedJson))
-
+	})
+	app.Listen(":8080")
 }

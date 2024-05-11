@@ -18,6 +18,15 @@ type User struct {
 	Tier      uint   `json:"tier"`
 }
 
+func getAllUsers(db *gorm.DB) []User {
+	var users []User
+	result := db.Find(&users)
+	if result.Error != nil {
+		log.Fatalf("Error creating user: %v", result.Error)
+	}
+	return users
+}
+
 func getUserById(db *gorm.DB, id int) *User {
 	var user User
 	result := db.First(&user, id)
@@ -27,20 +36,20 @@ func getUserById(db *gorm.DB, id int) *User {
 	return &user
 }
 
-func createUser(db *gorm.DB, user *User) {
+func createUser(db *gorm.DB, user *User) error {
 	result := db.Create(user)
 	if result.Error != nil {
 		log.Fatalf("Error creating user: %v", result.Error)
 	}
-	fmt.Printf("User created successfully")
+	return nil
 }
 
-func updateUser(db *gorm.DB, user *User) {
-	result := db.Save(&user)
+func updateUser(db *gorm.DB, user *User) error {
+	result := db.Model(&user).Updates(user)
 	if result.Error != nil {
-		log.Fatalf("Error updating user: %v", result.Error)
+		return result.Error
 	}
-	fmt.Printf("Update user successfully")
+	return nil
 }
 
 func deleteUser(db *gorm.DB, id int) {
